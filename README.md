@@ -7,7 +7,7 @@ Driving vintage HP HDSP-2000 Alphanumeric LED displays with a retro EPROM 8051 M
 I made this project because I love Vintage Hardware and wanted to make something cool with the LED displays and an old 8051 that I had. End goal is to implement LCD emulation so it can act as a drop in Character LCD replacement. 
 I also wanted to take on the challenge of optimizing the code to run fast enough with the limited speed and peripherals of the 8051 Microcontroller. As a result, I got to learn the 8051's memory map with more detail in order take advantage of the bit-addressable RAM on the chip for a fast bit-banged SPI output. 
 
-##Demo:
+## Demo:
 Check out the Vintage Beauty Demo program in the [demo folder](demo/)
 
 ## Features:
@@ -20,7 +20,7 @@ Check out the Vintage Beauty Demo program in the [demo folder](demo/)
 - Full HD44780/HD66702 LCD Driver emulation via GPIO ports.
 - Serial UART control.
 
-##References and Datasheets:
+## References and Datasheets:
 - [HD66702 LCD Driver Datasheet (For ROM Reference)](http://www.farnell.com/datasheets/31212.pdf)
 - [HDSP-2000 Datasheet](http://www.hparchive.com/PARTS/HP-Displays-HDSP-2010.pdf)
 - [Intel 87C51 Datasheet](https://www.keil.com/dd/docs/datashts/intel/80x1bh_87c51_ds.pdf)

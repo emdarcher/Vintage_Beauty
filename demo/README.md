@@ -13,7 +13,7 @@ Japanese Demo:
 Close up on that Beautiful EPROM 8051 (Intel 87C51)
 ![Close up on the EPROM 8051](vintage_beauty_demo_mcu.jpg)
 
-##Hardware setup:
+## Hardware setup:
 - Port 2 bits P2.0-P2.4 are used for driving the 5 display columns via NPN transistors. 
 - P1.6 is used as SPI Serial Data Out to the displays, entering at the left-most display.
 - P1.7 is used for SPI Clock output to the displays, shared Clock signal by all displays.
