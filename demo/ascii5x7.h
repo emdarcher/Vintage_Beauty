@@ -67,6 +67,7 @@
 #define CHAR_JP_DZI     0xF1    //ヂ
 #define CHAR_JP_DI      CHAR_JP_DZI
 #define CHAR_JP_DZU     0xF2    //ヅ
+#define CHAR_JP_DU      CHAR_JP_DZU
 #define CHAR_JP_DE      0xF3    //デ
 #define CHAR_JP_DO      0xF4    //ド
 #define CHAR_JP_PA      0xF5    //パ
@@ -90,40 +91,40 @@
 //put in the unused ROM space of the standard LCD ROM space
 
 //First empty space, in LCDs this is part of CGRAM
-#define HIRAGANA_A      0x00    //あ    
-#define HIRAGANA_I      0x01    //い
-#define HIRAGANA_U      0x02    //う
-#define HIRAGANA_E      0x03    //え
-#define HIRAGANA_O      0x04    //お
-#define HIRAGANA_KA     0x05    //か
-#define HIRAGANA_KI     0x06    //き
-#define HIRAGANA_KU     0x07    //く
-#define HIRAGANA_KE     0x08    //け
-#define HIRAGANA_KO     0x09    //こ
-#define HIRAGANA_SA     0x0A    //さ
-#define HIRAGANA_SHI    0x0B    //し
-#define HIRAGANA_SU     0x0C    //す
-#define HIRAGANA_SE     0x0D    //せ
-#define HIRAGANA_SO     0x0E    //そ
-#define HIRAGANA_TA     0x0F    //た
-#define HIRAGANA_CHI    0x10    //ち
-#define HIRAGANA_TSU    0x11    //つ
-#define HIRAGANA_TE     0x12    //て
-#define HIRAGANA_TO     0x13    //と
-#define HIRAGANA_NA     0x14    //な
-#define HIRAGANA_NI     0x15    //に
-#define HIRAGANA_NU     0x16    //ぬ
-#define HIRAGANA_NE     0x17    //ね
-#define HIRAGANA_NO     0x18    //の
-#define HIRAGANA_HA     0x19    //は
-#define HIRAGANA_HI     0x1A    //ひ
-#define HIRAGANA_HU     0x1B    //ふ
+//skip NUL 0x00
+#define HIRAGANA_A      0x01    //あ    
+#define HIRAGANA_I      0x02    //い
+#define HIRAGANA_U      0x03    //う
+#define HIRAGANA_E      0x04    //え
+#define HIRAGANA_O      0x05    //お
+#define HIRAGANA_KA     0x06    //か
+#define HIRAGANA_KI     0x07    //き
+#define HIRAGANA_KU     0x08    //く
+#define HIRAGANA_KE     0x09    //け
+#define HIRAGANA_KO     0x0A    //こ
+#define HIRAGANA_SA     0x0B    //さ
+#define HIRAGANA_SHI    0x0C    //し
+#define HIRAGANA_SU     0x0D    //す
+#define HIRAGANA_SE     0x0E    //せ
+#define HIRAGANA_SO     0x0F    //そ
+#define HIRAGANA_TA     0x10    //た
+#define HIRAGANA_CHI    0x11    //ち
+#define HIRAGANA_TSU    0x12    //つ
+#define HIRAGANA_TE     0x13    //て
+#define HIRAGANA_TO     0x14    //と
+#define HIRAGANA_NA     0x15    //な
+#define HIRAGANA_NI     0x16    //に
+#define HIRAGANA_NU     0x17    //ぬ
+#define HIRAGANA_NE     0x18    //ね
+#define HIRAGANA_NO     0x19    //の
+#define HIRAGANA_HA     0x1A    //は
+#define HIRAGANA_HI     0x1B    //ひ
+#define HIRAGANA_HU     0x1C    //ふ
 #define HIRAGANA_FU     HIRAGANA_HU
-#define HIRAGANA_HE     0x1C    //へ
-#define HIRAGANA_HO     0x1D    //ほ
-//extras with dakuten, common particles が and だ
-#define HIRAGANA_GA     0x1E    //が
-#define HIRAGANA_DA     0x1F    //だ
+#define HIRAGANA_HE     0x1D    //へ
+#define HIRAGANA_HO     0x1E    //ほ
+//extras with dakuten, common particle が 
+#define HIRAGANA_GA     0x1F    //が
 
 //the second open part of the ROM space
 #define HIRAGANA_MA     0x80    //ま
@@ -151,14 +152,13 @@
 #define HIRAGANA_XYO    0x93    //ょ
 #define HIRAGANA_LITTLE_YO      HIRAGANA_XYO
 //more extras with dakuten. Tried to include most common ones
-//for conguation and particles in Japanese. 
+//for congugation and particles in Japanese. 
 #define HIRAGANA_GI     0x94    //ぎ
 #define HIRAGANA_GU     0x95    //ぐ
 #define HIRAGANA_GE     0x96    //げ
 #define HIRAGANA_GO     0x97    //ご
 #define HIRAGANA_JI     0x98    //じ
-#define HIRAGANA_DZU    0x99    //づ
-#define HIRAGANA_DU     HIRAGANA_DZU
+#define HIRAGANA_DA     0x99    //だ
 #define HIRAGANA_DE     0x9A    //で
 #define HIRAGANA_DO     0x9B    //ど
 #define HIRAGANA_BA     0x9C    //ば

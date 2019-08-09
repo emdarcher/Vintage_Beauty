@@ -104,20 +104,21 @@ void shift_out_buff(void);
 inline void shift_out_column(uint8_t col_num);
 uint8_t get_char_col(uint8_t ch, uint8_t col);
 void load_col_buff(uint8_t col);
-void load_out_str_buff(uint8_t * in_str);
+void load_out_str_buff(uint8_t * in_str, bool is_str);
 
 void init_timer0_interrupt(void);
 inline void disable_timer0_interrupt(void);
 
 
-
-void load_out_str_buff(uint8_t * in_str){
+void load_out_str_buff(uint8_t * in_str, bool is_str){
     //loads the out string buffer with an input string
+    //the is_str parameter is to tell if the input is a 
+    //NULL terminated C string, or if it's just a raw character array
 
     //copy in the blank space string
     memcpy(out_str_buff, disp_blank_str, CHAR_COUNT + 1);
     //tmp variable to store the input string length
-    uint8_t in_str_len = strlen(in_str);
+    uint8_t in_str_len = (is_str) ? strlen(in_str) : sizeof(in_str);
     //copy in the in_str to the buffer, making sure not to overflow
     if(in_str_len <= CHAR_COUNT){
         memcpy(out_str_buff, in_str, in_str_len);
@@ -237,10 +238,10 @@ void main(void){
     //load test string into the buffer
     if(MESSAGE_SWITCH_PIN == 1){
         //if the pin is pulled HIGH then output the test_str
-        load_out_str_buff(test_str);
+        load_out_str_buff(test_str, true);
     } else {
         //if the pin is pulled low, then output the jp_test_str
-        load_out_str_buff(jp_test_str);
+        load_out_str_buff(jp_test_str, false);
     }
 
     //variable to increment the current column

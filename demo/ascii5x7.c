@@ -11,9 +11,9 @@ const uint8_t ascii_matrices[CHAR_ROM_SIZE][CHAR_COLS] = {
     //lsb is bottom row of the character
     //
 #if USE_HIRAGANA_ROM == 0
+//first address, starting at 0x00
 
-    {//first address, starting at 0x00
-         
+    {// NUL        
             0b00000000,  
             0b00000000,  
             0b00000000,  
@@ -303,6 +303,15 @@ const uint8_t ascii_matrices[CHAR_ROM_SIZE][CHAR_COLS] = {
 
 #elif USE_HIRAGANA_ROM == 1
     //address 0x00
+    {//NUL
+         
+            0b00000000,  
+            0b00000000,  
+            0b00000000,  
+            0b00000000,  
+            0b00000000,  
+          
+    },
     {//あ
          
             0b00001111,  
@@ -580,15 +589,6 @@ const uint8_t ascii_matrices[CHAR_ROM_SIZE][CHAR_COLS] = {
             0b00001000,  
             0b00011110,  
             0b00001001,  
-          
-    },
-    {//だ
-         
-            0b01000101,  
-            0b01010101,  
-            0b00010001,  
-            0b00111000,  
-            0b00010111,  
           
     },
 
@@ -2035,13 +2035,13 @@ const uint8_t ascii_matrices[CHAR_ROM_SIZE][CHAR_COLS] = {
             0b01111110,  
           
     },
-    {//づ
+    {//だ
          
-            0b01001100,  
-            0b01010010,  
+            0b01000101,  
+            0b01010101,  
             0b00010001,  
-            0b00010001,  
-            0b00010001,  
+            0b00111000,  
+            0b00010111,  
           
     },
     {//で
