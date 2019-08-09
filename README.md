@@ -8,6 +8,8 @@ I made this project because I love Vintage Hardware and wanted to make something
 
 I also wanted to take on the challenge of optimizing the code to run fast enough with the limited speed and peripherals of the 8051 Microcontroller. As a result, I got to learn the 8051's memory map with more detail in order take advantage of the bit-addressable RAM on the chip for a fast bit-banged SPI output, which was pretty fun. 
 
+Pulished on Hackaday Projects as an entry into the Beautiful Hardware Contest [here](https://hackaday.io/project/167033-vintagebeauty).
+
 ## Demo:
 Check out the Vintage Beauty Demo program in the [demo folder](demo/)
 
