@@ -10,8 +10,8 @@ Basic Demo:
 ![Vintage Beauty Demo](vintage_beauty_demo.jpg)
 Japanese Demo:
 ![Vintage Beauty Demo in Japanese](vintage_beauty_demo_jp.jpg)
-Close up on that Beautiful EPROM 8051 (Intel 87C51)
-![Close up on the EPROM 8051](vintage_beauty_demo_mcu.jpg)
+Top View for the Hardware Setup:
+![top view](vintage_beauty_demo_top.jpg)
 
 ## Hardware setup:
 - Port 2 bits P2.0-P2.4 are used for driving the 5 display columns via NPN transistors. 
@@ -55,4 +55,5 @@ To flash we use the tool `miniprohex` from minipro, as it can flash using a `*.h
 miniprohex -p 87c51 -w main.hex -s
 ```
 
-
+Close up on that Beautiful EPROM 8051 (Intel 87C51)
+![Close up on the EPROM 8051](vintage_beauty_demo_mcu.jpg)
