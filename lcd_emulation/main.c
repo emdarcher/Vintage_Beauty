@@ -39,6 +39,11 @@
 #define DISP_BLANK_SPACES   SPACE_4 SPACE_4 SPACE_4 SPACE_4
 #endif
 
+//LCD display blink rate is 320ms 
+#define BLINK_RATE_MS   320
+//caclulates how many timer ticks to generate the proper blink rate in MS
+#define TICKS_PER_BLINK     ((BLINK_RATE_MS)/(1000/(TICKS_PER_SEC)))
+
 //The port for column control (connects to transistors to drive the columns)
 #define COL_PORT            P2
 //sets the column port to all zeros to blank the columns
@@ -50,7 +55,7 @@
 #define DATA_CLK_PIN        P1_7
 
 //LCD control commands, the base bit mask for each command.
-#define CMD_CLEAR_DISPLAY   0x00
+#define CMD_CLEAR_DISPLAY   0x01
 #define CMD_RETURN_HOME     0x02
 #define CMD_ENTRY_MODE_SET  0x04
 #define CMD_DISP_ON_OFF     0x08
@@ -58,6 +63,24 @@
 #define CMD_FUNC_SET        0x20
 #define CMD_SET_CGRAM_ADDR  0x40
 #define CMD_SET_DDRAM_ADDR  0x80
+
+//masks for read/write etc. bottom two bits are values of RS and RW
+#define READ_BUSY_FLAG      0x01
+#define WRITE_DATA          0x02
+#define READ_DATA           0x03
+
+//bit numbers for flags in various commands
+#define ENTRY_MODE_I_D_BIT      1
+#define ENTRY_MODE_S_BIT        0
+#define DISPLAY_ON_BIT          2
+#define DISPLAY_CURSOR_BIT      1
+#define DISPLAY_BLINK_BIT       0
+#define DISPLAY_SHIFT_BIT       3
+#define DISPLAY_SHITT_DIR_BIT   2
+#define FUNC_SET_DATA_LEN_BIT   4
+#define FUNC_SET_N_LINES_BIT    3
+#define FUNC_SET_FONT_BIT       2
+
 
 //the selection and control pins
 #define RS_PIN      P1_1
@@ -85,8 +108,34 @@ const uint8_t col_bits[CHAR_COLS] = {
 //output buffer to hold column data to shift out
 volatile uint8_t out_buff[CHAR_COUNT];
 
+//variable to store the IR (instruction register)
+volatile uint8_t ins_reg;
+
+//variable to store the DR (data register)
+volatile uint8_t data_reg;
+
+//variable to store the AC (address counter)
+volatile uint8_t addr_counter;
+
 //the internal busy flag, used for outputting the busy state when requested.
-volatile __bit busy_flag = 1;
+volatile __bit busy_flag = 0;
+
+//sets the blinking  state
+volatile __bit blink_state = 0;
+
+//triggers the blinking tick function
+volatile __bit blink_flag = 0;
+
+//sets if blinking block is currently on
+__bit block_on = 0;
+
+//variable to count ticks
+volatile uint8_t tick_cnt = 0;
+
+//set when enabled
+volatile __bit enable_flag = 0;
+//sets the enabled state
+__bit enable_state = 0;
 
 //use first bit addressable byte address as a buff
 volatile __data __at (0x20) uint8_t out_bits_buff;
@@ -128,10 +177,58 @@ inline void shift_out_column(uint8_t col_num);
 uint8_t get_char_col(uint8_t ch, uint8_t col);
 void load_col_buff(uint8_t col);
 void load_out_str_buff(uint8_t * in_str, bool is_str);
-
+//inerrupt setup functions
 void init_timer0_interrupt(void);
 inline void disable_timer0_interrupt(void);
+void init_int1_interrupt(void);
 
+//tick functions
+void blinking_tick(void);
+void column_update_tick(void);
+
+void init_int1_interrupt(void){
+    //set the pin value to 1 
+    P3_3 = 1;
+    //enable all interrupts
+    EA = 1;
+    //enable external interrupt 1
+    EX1 = 1;
+    //setup for edge-triggering
+    IT1 = 1;
+}
+
+
+void column_update_tick(void){
+    //variable to increment the current column
+    static uint8_t col_inc;
+    
+    if(disp_col_update_flag != 0){
+        //wait for the flag
+        //once flagged
+        //load column data into the buffer
+        load_col_buff(col_inc);
+        //shift out the column data
+        shift_out_column(col_inc);
+        //increment the column
+        col_inc++;
+        //if increment has reached max, reset to column zero
+        if(col_inc >= CHAR_COLS){
+            col_inc = 0;
+        }
+        //reset the flag, so we can wait for the next interrupt
+        disp_col_update_flag = 0;
+    }
+}
+
+
+void blinking_tick(void){
+    if(blink_flag == 1){
+        //toggle the blink
+        block_on == !block_on;
+        //reset the flag
+        blink_flag = 0;
+    }
+}
 
 void load_out_str_buff(uint8_t * in_str, bool is_str){
     //loads the out string buffer with an input string
@@ -157,7 +254,13 @@ void load_col_buff(uint8_t col){
     uint8_t i = CHAR_COUNT - 1;
     while(1){
         //load the row data for the char
-        out_buff[i] = get_char_col(out_str_buff[i], col);
+        if((blink_state == 1) && (i == addr_counter) && (block_on == 1)){
+            //if blinking, blink the block when active
+            out_buff[i] =  0xFF; //all 1's to blink display
+        } else {
+            //load the character columns from the ROM
+            out_buff[i] = get_char_col(out_str_buff[i], col);
+        }
    
         //break when we reach zero 
         if(i == 0){
@@ -255,41 +358,15 @@ inline void disable_timer0_interrupt(void){
 
 
 void main(void){
-    //make the message switch pin an input
-    MESSAGE_SWITCH_PIN = 1;
-
-    //load test string into the buffer
-    if(MESSAGE_SWITCH_PIN == 1){
-        //if the pin is pulled HIGH then output the test_str
-        load_out_str_buff(test_str, true);
-    } else {
-        //if the pin is pulled low, then output the jp_test_str
-        load_out_str_buff(jp_test_str, false);
-    }
-
-    //variable to increment the current column
-    uint8_t col_inc = 0;
-
     //init the timer
     init_timer0_interrupt();
+    //init the external interrupt
+    init_int1_interrupt();
 
     //loop
     while(1){
-        //wait for the flag
-        while(disp_col_update_flag == 0);
-        //once flagged
-        //load column data into the buffer
-        load_col_buff(col_inc);
-        //shift out the column data
-        shift_out_column(col_inc);
-        //increment the column
-        col_inc++;
-        //if increment has reached max, reset to column zero
-        if(col_inc == CHAR_COLS){
-            col_inc = 0;
-        }
-        //reset the flag, so we can wait for the next interrupt
-        disp_col_update_flag = 0;
+        column_update_tick();
+        blinking_tick();
     }
 }
 
@@ -304,6 +381,27 @@ void Timer0_ISR(void) __interrupt 1 {
     //set our flag
     disp_col_update_flag = 1;
 
+    //if we are blinking
+    if(blink_state == 1){
+        //increment count
+        tick_cnt++;
+        //flag blink when count is reached
+        if(tick_cnt >= TICKS_PER_BLINK){
+            //trigger flag
+            blink_flag = 1;
+            //reset count
+            tick_cnt = 0;
+        }
+    }
+
     //set the bits again     
     TR0 = 1;
+}
+
+//the External Interrupt 1 (INT1) service routine
+void INT1_ISR(void) __interrupt 2 {
+    
+    //set the busy flag
+    busy_flag = 1;
+
 }
