@@ -137,21 +137,32 @@ volatile __bit enable_flag = 0;
 //sets the enabled state
 __bit enable_state = 0;
 
-//use first bit addressable byte address as a buff
-volatile __data __at (0x20) uint8_t out_bits_buff;
-//bit variables to access the bits of the byte buff at data 0x20
-__bit __at (0x00) out_bit0;
-__bit __at (0x01) out_bit1;
-__bit __at (0x02) out_bit2;
-__bit __at (0x03) out_bit3;
-__bit __at (0x04) out_bit4;
-__bit __at (0x05) out_bit5;
-__bit __at (0x06) out_bit6;
-__bit __at (0x07) out_bit7;
 
+/*
+ * Memory Map example for one byte of the 8051's bit memory
+ *
+ * Byte Addr    |MSB           Bit Addresses         LSB|
+ * 0x20         |0x07|0x06|0x05|0x04|0x03|0x02|0x01|0x00|
+ *
+ */
+
+//use the first bit addressable byte address in the 8051 as a buffer
+volatile __data __at (0x20) uint8_t out_bits_buff;
+//bit variables to access the individual bits of the byte buff at data 0x20
+__bit __at (0x00) out_bit0; //address for bit 0 of the byte buff at data 0x20
+__bit __at (0x01) out_bit1; //bit 1
+__bit __at (0x02) out_bit2; //bit 2
+__bit __at (0x03) out_bit3; //bit 3
+__bit __at (0x04) out_bit4; //bit 4
+__bit __at (0x05) out_bit5; //bit 5
+__bit __at (0x06) out_bit6; //bit 6
+__bit __at (0x07) out_bit7; //bit 7
+
+//REMOVE FOR SPACE LATER
 //the standard test string to output
 const uint8_t test_str[] = "Vintage Beauty.";
 
+//REMOVE FOR SPACE LATER
 //the japanese test string to output (using ROM_CODE_A01)
 //message: ビンテージのうつくしさ。
 const uint8_t jp_test_str[] = {
@@ -171,15 +182,15 @@ const uint8_t disp_blank_str[CHAR_COUNT + 1] = DISP_BLANK_SPACES;
 volatile __bit disp_col_update_flag;
 
 //function prototypes
-inline void shift_out_7bits(uint8_t in_byte);
+void shift_out_7bits(uint8_t in_byte);
 void shift_out_buff(void);
-inline void shift_out_column(uint8_t col_num);
+void shift_out_column(uint8_t col_num);
 uint8_t get_char_col(uint8_t ch, uint8_t col);
 void load_col_buff(uint8_t col);
 void load_out_str_buff(uint8_t * in_str, bool is_str);
 //inerrupt setup functions
 void init_timer0_interrupt(void);
-inline void disable_timer0_interrupt(void);
+void disable_timer0_interrupt(void);
 void init_int1_interrupt(void);
 
 //tick functions
@@ -276,7 +287,7 @@ uint8_t get_char_col(uint8_t ch, uint8_t col){
     return ascii_matrices[ch][col];
 }
 
-inline void shift_out_column(uint8_t col_num){
+void shift_out_column(uint8_t col_num){
     //shifts out to a column on the display 
 
     //clear all columns before writing to the display
@@ -303,11 +314,12 @@ void shift_out_buff(void){
     }
 }
 
-inline void shift_out_7bits(uint8_t in_byte){
-    //shifts out 7 bits from the in_byte, LSB first in an SPI-like fashion
+void shift_out_7bits(uint8_t in_byte){
+    //shifts out 7 bits from the in_byte, LSB first in a SPI-like fashion
     //accesses each bit at a time utilizing the bit addressable variables
     //to optimize for speed
 
+    //copy our in_byte into our bit-addressable byte buffer
     out_bits_buff = in_byte;
     //set clock high to start
     DATA_CLK_PIN = 1;
@@ -315,7 +327,7 @@ inline void shift_out_7bits(uint8_t in_byte){
     DATA_OUT_PIN = out_bit0;
     //set clock down to shift in the bit.
     DATA_CLK_PIN = 0;
-    //a NOP to give tiny downtime between clock pulses
+    //a NOP to give a tiny downtime between clock pulses
     __asm
         nop  
     __endasm;
@@ -351,7 +363,7 @@ void init_timer0_interrupt(void){
     TR0 = 1;
 }
 
-inline void disable_timer0_interrupt(void){
+void disable_timer0_interrupt(void){
     //disable the timer 0 interrupt enable bit
     ET0 = 0;
 }
