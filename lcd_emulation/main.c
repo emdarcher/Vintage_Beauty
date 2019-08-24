@@ -46,8 +46,8 @@
 
 //The port for column control (connects to transistors to drive the columns)
 #define COL_PORT            P2
-//sets the column port to all zeros to blank the columns
-#define COLS_OFF            0x00;
+//sets the column pin to all zeros to blank the columns
+#define COLS_OFF_MASK       0b11100000;
 
 //the pin for SPI serial out
 #define DATA_OUT_PIN        P1_6
@@ -85,10 +85,10 @@
 //the selection and control pins
 #define RS_PIN      P1_1
 #define RW_PIN      P1_0
-//the enable pin, attached to external interrupt 1 (INT1) on P3.3
+//the enable pin, attached to external interrupt 1 (INT0) on P3.2
 //make sure to invert the E signal before input using an inverter
 //as the interrupt is triggered on LOW, but LCD spec is triggered on HIGH
-#define E_PIN       P3_3
+#define E_PIN       P3_2
 //the port for data bus input/output
 #define DB_PORT     P0
 //the busy state output pin (this is done on DB7)
@@ -291,11 +291,11 @@ void shift_out_column(uint8_t col_num){
     //shifts out to a column on the display 
 
     //clear all columns before writing to the display
-    COL_PORT = COLS_OFF;
+    COL_PORT &= COLS_OFF_MASK;
     //shift out the contents of the buffer with row data
     shift_out_buff();
     //turn on the column we want
-    COL_PORT = col_bits[col_num];
+    COL_PORT |= col_bits[col_num];
 }
 
 void shift_out_buff(void){
@@ -410,8 +410,8 @@ void Timer0_ISR(void) __interrupt 1 {
     TR0 = 1;
 }
 
-//the External Interrupt 1 (INT1) service routine
-void INT1_ISR(void) __interrupt 2 {
+//the External Interrupt 0 (INT0) service routine
+void INT0_ISR(void) __interrupt 0 {
     
     //set the busy flag
     busy_flag = 1;
