@@ -191,21 +191,21 @@ void load_out_str_buff(uint8_t * in_str, bool is_str);
 //inerrupt setup functions
 void init_timer0_interrupt(void);
 void disable_timer0_interrupt(void);
-void init_int1_interrupt(void);
+void init_int0_interrupt(void);
 
 //tick functions
 void blinking_tick(void);
 void column_update_tick(void);
 
-void init_int1_interrupt(void){
+void init_int0_interrupt(void){
     //set the pin value to 1 
-    P3_3 = 1;
+    P3_2 = 1;
     //enable all interrupts
     EA = 1;
-    //enable external interrupt 1
-    EX1 = 1;
+    //enable external interrupt 0
+    EX0 = 1;
     //setup for edge-triggering
-    IT1 = 1;
+    IT0 = 1;
 }
 
 
@@ -373,7 +373,7 @@ void main(void){
     //init the timer
     init_timer0_interrupt();
     //init the external interrupt
-    init_int1_interrupt();
+    init_int0_interrupt();
 
     //loop
     while(1){
