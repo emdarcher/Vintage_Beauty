@@ -130,10 +130,10 @@ const uint8_t col_bits[CHAR_COLS] = {
 volatile uint8_t out_buff[CHAR_COUNT];
 
 //variable to store the IR (instruction register)
-volatile uint8_t ins_reg;
+volatile uint8_t ins_reg = 0x00;
 
 //variable to store the DR (data register)
-volatile uint8_t data_reg;
+volatile uint8_t data_reg = 0x00;
 
 
 //specifies increment or decrement mode
@@ -144,7 +144,7 @@ volatile uint8_t cgram_addr;
 volatile uint8_t ddram_addr;
 
 //variable to store the AC (address counter)
-volatile uint8_t addr_counter;
+volatile uint8_t addr_counter = 0x00;
 
 //the internal busy flag, used for outputting the busy state when requested.
 volatile __bit busy_flag = 0;
@@ -186,7 +186,7 @@ volatile __bit display_on = 1;
 volatile __bit new_request_flag = 0;
 
 //store current request
-volatile uint8_t request_type = 0;
+volatile uint8_t request_type = NO_REQUEST;
 
 /*
  * Memory Map example for one byte of the 8051's bit memory
@@ -243,6 +243,7 @@ void write_ddram_addr(uint8_t addr, uint8_t data);
 uint8_t read_ddram_addr(uint8_t addr);
 
 void process_command(uint8_t cmd);
+void inc_addr_counter(bool inc_dec);
 
 //interrupt setup functions
 void init_timer0_interrupt(void);
@@ -253,6 +254,22 @@ void init_int0_interrupt(void);
 void blinking_tick(void);
 void column_update_tick(void);
 void process_request_tick(void);
+
+void inc_addr_counter(bool inc_dec){
+    //increments or decrement the address counter depending on the 
+    //global inc or dec setting from the entry mode set.
+
+    //changes the direction based on the given inc_dec parameter
+    int8_t inc_dec_var = (inc_dec) ? 1 : (-1);
+
+    if(inc_dec_bit){
+        //"increment"
+        addr_counter += inc_dec_var;
+    } else {
+        //"decrement" 
+        addr_counter -= inc_dec_var;
+    }
+}
 
 uint8_t read_ddram_addr(uint8_t addr){
     //read from the given address
@@ -273,12 +290,15 @@ void write_ddram_addr(uint8_t addr, uint8_t data){
 
 void process_request_tick(void){
    
+    //only run if the flag is set
     if(new_request_flag != 0){
 
         switch(request_type){
             case OTHER_CMD:
                 //call function to process the command
-
+                process_command(ins_reg);
+                //unset busy?
+                //
                 break;
             
             case WRITE_DATA:
@@ -286,7 +306,7 @@ void process_request_tick(void){
                 //copy the data from the register and into the buffer
                 write_ddram_addr(addr_counter, data_reg);
                 //increment the address counter
-                addr_counter++;
+                inc_addr_counter(true);
                 //unset busy flag
                 busy_flag = 0;
                 break;
@@ -295,9 +315,13 @@ void process_request_tick(void){
                 //read from the buff to the data port
                 DB_PORT = read_ddram_addr(addr_counter);
                 //decrement address counter
-                addr_counter--;
+                inc_addr_counter(false);
                 //unset the busy flag
                 busy_flag = 0;
+                break;
+            
+           case NO_REQUEST:
+                //do nothing
                 break;
         }
         //unset busy flag by here 
@@ -318,6 +342,10 @@ void process_command(uint8_t cmd){
     } else if(cmd & ~CMD_SET_CGRAM_ADDR_MASK){
         //not implementing CGRAM right now
         //so nothing
+        //
+        //NOTE: we need to keep this here because if it is missing from
+        //the if-else chain then calls for the set cgram function could trigger
+        //the following bitwise checks below.
     
     } else if(cmd & ~CMD_FUNC_SET_MASK){
         //set data length
@@ -335,10 +363,10 @@ void process_command(uint8_t cmd){
             //shift the cursor 
             if(shift_dir){
                 //shift right (increment addr_counter)
-                addr_counter++;
+                inc_addr_counter(true);
             } else {
                 //shift left (decrement addr_counter) 
-                addr_counter--;
+                inc_addr_counter(false);
             }
         } else {
             //shift the display 
@@ -372,6 +400,9 @@ void process_command(uint8_t cmd){
         //return address counter to address zero
         addr_counter = 0x00;
     }
+
+    //unset busy flag here
+    busy_flag = 0;
 
 }
 
@@ -458,6 +489,7 @@ void load_col_buff(uint8_t col){
             out_buff[i] = get_char_col(out_str_buff[i], col);
             //set the cursor line bit if cursor is active
             if((cursor_state == 1) && (i == addr_counter)){
+                //set the cursor line pixel bits
                 out_buff[i] |= CURSOR_MASK;
             }
         }
@@ -477,7 +509,7 @@ uint8_t get_char_col(uint8_t ch, uint8_t col){
 }
 
 void shift_out_column(uint8_t col_num){
-    //shifts out to a column on the display 
+    //shifts out to a column to each character space on the displays
 
     //clear all columns before writing to the display
     COL_PORT &= COLS_OFF_MASK;
@@ -547,8 +579,8 @@ void init_timer0_interrupt(void){
     //low bits
     TL0 = TIMER_BITS & 0x00ff;
     TMOD = 0x01; //set mode
-    EA = 1;
-    ET0 = 1;
+    EA = 1; //enable all interrupts
+    ET0 = 1;//enable the timer 0 interrupt
     TR0 = 1;
 }
 
@@ -559,15 +591,17 @@ void disable_timer0_interrupt(void){
 
 
 void main(void){
-    //init the timer
+    //init the timer 0 interrupt
     init_timer0_interrupt();
     //init the external interrupt
     init_int0_interrupt();
 
     //loop
     while(1){
+        //run the tick functions
         column_update_tick();
         blinking_tick();
+        process_request_tick();
     }
 }
 
