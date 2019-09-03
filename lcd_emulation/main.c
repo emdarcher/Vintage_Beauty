@@ -274,6 +274,7 @@ void inc_addr_counter(bool inc_dec){
 uint8_t read_ddram_addr(uint8_t addr){
     //read from the given address
     if(addr < CHAR_COUNT){
+        //give the data at the address
         return out_str_buff[addr]; 
     } else {
         return 0;
@@ -283,7 +284,7 @@ uint8_t read_ddram_addr(uint8_t addr){
 void write_ddram_addr(uint8_t addr, uint8_t data){
     //write data into the buffer
     if(addr < CHAR_COUNT){
-        //copy the data 
+        //put the data in
         out_str_buff[addr] = data;
     }
 }
